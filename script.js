@@ -14,24 +14,57 @@ const API_KEY = '&appid=c674f7d659690afacbcbc98048f09936'
 const API_UNITS = '&units=metric'
 
 const getWeather = () => {
-	const city = input.value || 'Rzym'
+	const city = input.value || 'Gdansk'
 	const URL = API_LINK + city + API_KEY + API_UNITS
 
-	axios.get(URL).then(res => {
-		cityName.textContent = res.data.name
-		const temp = res.data.main.temp
-        const hum = res.data.main.humidity
-        const press = res.data.main.pressure
-        const blast = res.data.wind.speed
-        const wea = res.data.weather[0].main
-        console.log(res.data);
+	axios
+		.get(URL)
+		.then(res => {
+            input.value = ''
+			warning.textContent = ''
+			cityName.textContent = res.data.name
+			const status = Object.assign({}, ...res.data.weather)
+			const temp = res.data.main.temp
+			const hum = res.data.main.humidity
+			const press = res.data.main.pressure
+			const blast = res.data.wind.speed
 
-		temperature.textContent = Math.floor(temp) + ' ℃'
-		wind.textContent = blast + ' m/s'
-		pressure.textContent = press + ' hPa'
-		humidity.textContent = hum + ' %'
-        weather.textContent = wea
-	})
+			if (status.id >= 200 && status.id < 300) {
+				photo.setAttribute('src', './img/thunderstorm.png')
+			} else if (status.id >= 300 && status.id < 400) {
+				photo.setAttribute('src', './img/drizzle.png')
+			} else if (status.id >= 500 && status.id < 600) {
+				photo.setAttribute('src', './img/rain.png')
+			} else if (status.id >= 600 && status.id < 700) {
+				photo.setAttribute('src', './img/ice.png')
+			} else if (status.id >= 700 && status.id < 800) {
+				photo.setAttribute('src', './img/fog.png')
+			} else if (status.id === 800) {
+				photo.setAttribute('src', './img/sun.png')
+			} else if (status.id >= 800 && status.id < 900) {
+				photo.setAttribute('src', './img/cloud.png')
+			} else {
+				photo.setAttribute('src', './img/unknown.png')
+			}
+
+			weather.textContent = status.main
+			temperature.textContent = Math.floor(temp) + '℃'
+			humidity.textContent = hum + '%'
+			pressure.textContent = press + ' hPa'
+			wind.textContent = blast + 'm/s'
+		})
+		.catch(() => (warning.textContent = 'Input of correct city name...'))
+}
+
+
+const enterCheck = e => {
+    if(e.key === 'Enter') {
+        getWeather()
+    }
 }
 
 getWeather()
+
+
+input.addEventListener('keyup', enterCheck)
+button.addEventListener('click', getWeather)
